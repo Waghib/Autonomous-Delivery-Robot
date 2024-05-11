@@ -17,7 +17,7 @@ seven = (0, 255, 0)
 
 pygame.init()
 
-size = (706, 706)
+size = (332, 332)
 screen = pygame.display.set_mode(size)
 
 pygame.display.set_caption("MAZE")
@@ -26,7 +26,7 @@ width = 20
 height = 20
 margin = 2
 
-grid = [[0 for x in range(33)] for y in range(33)]
+grid = [[0 for x in range(15)] for y in range(15)]
 
 done = False
 clock = pygame.time.Clock()
@@ -46,18 +46,24 @@ def savegrid():
 def loadgrid(index):
     global grid
     script_dir = os.path.dirname(__file__)  # Get the directory of the current script
-    if index == 0:
-        file_path = os.path.join(script_dir, "maze.txt")
-    elif index == 1:
-        file_path = os.path.join(script_dir, "Maze1", "maze.txt")
-    elif index == 2:
-        file_path = os.path.join(script_dir, "Maze2", "maze.txt")
-    elif index == 3:
-        file_path = os.path.join(script_dir, "Maze3", "maze.txt")
-    elif index == 4:
-        file_path = os.path.join(script_dir, "Maze4", "maze.txt")
-    elif index == 5:
-        file_path = os.path.join(script_dir, "Maze5", "maze.txt")
+
+    file_path = os.path.join(script_dir, "Maze1", "maze.txt")
+
+    # start_row = 1
+    # start_column = 1
+    # grid[start_row][start_column] = 2
+    # if index == 0:
+    #     file_path = os.path.join(script_dir, "maze.txt")
+    # elif index == 1:
+    #     file_path = os.path.join(script_dir, "Maze1", "maze.txt")
+    # elif index == 2:
+    #     file_path = os.path.join(script_dir, "Maze2", "maze.txt")
+    # elif index == 3:
+    #     file_path = os.path.join(script_dir, "Maze3", "maze.txt")
+    # elif index == 4:
+    #     file_path = os.path.join(script_dir, "Maze4", "maze.txt")
+    # elif index == 5:
+    #     file_path = os.path.join(script_dir, "Maze5", "maze.txt")
 
     try:
         grid = np.loadtxt(file_path).tolist()
@@ -125,7 +131,7 @@ def animate_shortest_path(came_from, start, end):
         path.append(current)
         current = came_from[current]
     path.append(start)
-    # path.reverse()  # Reverse the path to start from the beginning
+    path.reverse()  # Reverse the path to start from the beginning
 
     for node in path:
         # Update the grid to visualize the pathfinding process
@@ -137,8 +143,8 @@ def animate_shortest_path(came_from, start, end):
 
 def draw_grid(screen, grid):
     screen.fill(two)
-    for row in range(33):
-        for column in range(33):
+    for row in range(15):
+        for column in range(15):
             if grid[row][column] == 1:
                 color = three
             elif grid[row][column] == 2:
@@ -211,6 +217,43 @@ def a_star(): # A* algorithm
     return None
 
 
+def draw_grid_end(grid):
+
+    for row in range(15):
+        for column in range(15):
+            if grid[row][column] == 1:
+                color = three
+            elif grid[row][column] == 2:
+                color = one
+            elif grid[row][column] == 3:
+                color = five
+            elif grid[row][column] == 4:
+                color = one
+            elif grid[row][column] == 5:
+                color = six
+            elif grid[row][column] == 6:
+                color = seven
+            else:
+                color = four
+            pygame.draw.rect(
+                screen,
+                color,
+                [
+                    margin + (margin + width) * column,
+                    margin + (margin + height) * row,
+                    width,
+                    height,
+                ],
+            )
+
+    return
+
+loadgrid(0)
+
+# initializing starting node 
+grid[1][1] = 2
+draw_grid_end(grid)
+
 while not done:
 
     for event in pygame.event.get():
@@ -228,7 +271,7 @@ while not done:
                 loadgrid(0)
             if event.key == pygame.K_f:
                 print("Filling Maze")
-                grid = [[1 for x in range(33)] for y in range(33)]
+                grid = [[1 for x in range(15)] for y in range(15)]
             if event.key == pygame.K_1:
                 print("Loading Maze 1")
                 loadgrid(1)
@@ -256,71 +299,52 @@ while not done:
                         print("No path found!")
             if event.key == pygame.K_r:
 
-                grid = [[0 for x in range(33)] for y in range(33)]
-        if pygame.mouse.get_pressed()[2]:
+                grid = [[0 for x in range(15)] for y in range(15)]
+        if pygame.mouse.get_pressed()[2]:  # Right mouse button
             column = pos[0] // (width + margin)
             row = pos[1] // (height + margin)
-            if (sum(x.count(2) for x in grid)) < 1 or (
-                sum(x.count(3) for x in grid)
-            ) < 1:
-                if (sum(x.count(2) for x in grid)) == 0:
+
+            print(column," , ", row)
+
+            # Check if the clicked cell is not the start node
+            if grid[row][column] != 2:
+                if (sum(x.count(2) for x in grid)) < 1 or (sum(x.count(3) for x in grid)) < 1:
+                    if (sum(x.count(2) for x in grid)) == 0:
+                        if grid[row][column] == 2:
+                            grid[row][column] = 0
+                        elif grid[row][column] == 3:
+                            grid[row][column] = 0
+                        else:
+                            grid[row][column] = 2
+                    else:
+                        if grid[row][column] == 3:
+                            grid[row][column] = 0
+                        elif grid[row][column] == 2:
+                            grid[row][column] = 0
+                        else:
+                            grid[row][column] = 3
+                else:
                     if grid[row][column] == 2:
                         grid[row][column] = 0
-                    elif grid[row][column] == 3:
-                        grid[row][column] = 0
-                    else:
-                        grid[row][column] = 2
-                else:
                     if grid[row][column] == 3:
                         grid[row][column] = 0
-                    elif grid[row][column] == 2:
+                    if grid[row][column] == 1:
                         grid[row][column] = 0
-                    else:
-                        grid[row][column] = 3
-            else:
-                if grid[row][column] == 2:
-                    grid[row][column] = 0
-                if grid[row][column] == 3:
-                    grid[row][column] = 0
-                if grid[row][column] == 1:
-                    grid[row][column] = 0
-        if pygame.mouse.get_pressed()[0]:
-            # if(event.button == 1):
+
+        if pygame.mouse.get_pressed()[0]:  # Left mouse button
             column = pos[0] // (width + margin)
             row = pos[1] // (height + margin)
-            print("left click")
-            grid[row][column] = 1
+
+            # Check if the clicked cell is not the start node
+            if grid[row][column] != 2:
+                grid[row][column] = 1  # Set the clicked cell to 1 (wall or obstacle)
 
     pos = pygame.mouse.get_pos()
     x = pos[0]
     y = pos[1]
     screen.fill(two)
-    for row in range(33):
-        for column in range(33):
-            if grid[row][column] == 1:
-                color = three
-            elif grid[row][column] == 2:
-                color = one
-            elif grid[row][column] == 3:
-                color = five
-            elif grid[row][column] == 4:
-                color = one
-            elif grid[row][column] == 5:
-                color = six
-            elif grid[row][column] == 6:
-                color = seven
-            else:
-                color = four
-            pygame.draw.rect(
-                screen,
-                color,
-                [
-                    margin + (margin + width) * column,
-                    margin + (margin + height) * row,
-                    width,
-                    height,
-                ],
-            )
+    draw_grid_end(grid)
+    
     pygame.display.flip()
     clock.tick(60)
 pygame.quit()
