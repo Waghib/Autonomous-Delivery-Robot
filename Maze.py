@@ -5,6 +5,7 @@ from queue import PriorityQueue
 import queue
 import os
 import sys
+import math
 
 # initializing colors
 one = (79, 189, 186)
@@ -100,10 +101,10 @@ def neighbourr(): # Find the neighbours of each cell
             count += 1
 
 
-def h(p1, p2): # Heuristic function manhattan distance
+def h(p1, p2): # euclean distance
     x1, y1 = p1
     x2, y2 = p2
-    return abs(x1 - x2) + abs(y1 - y2)
+    return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
 
 def S_E(maze, start, end): # Find the start and end points
