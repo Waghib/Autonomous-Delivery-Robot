@@ -6,7 +6,7 @@ import queue
 import os
 import sys
 
-# colors
+# initializing colors
 one = (79, 189, 186)
 two = (206, 171, 147)
 three = (227, 202, 165)
