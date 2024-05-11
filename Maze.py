@@ -115,12 +115,20 @@ def h(p1, p2): # euclean distance
 
 
 def S_E(maze, start, end): # Find the start and end points
+    flag = False
     for x in range(len(grid)):
         for y in range(len(grid[x])):
+            if grid[x][y] == 1:
+                continue 
             if grid[x][y] == 2:
                 start = x, y
             if grid[x][y] == 3:
                 end = x, y
+                flag = True
+        if flag:
+            break
+                
+
 
     return start, end
 
@@ -175,12 +183,19 @@ def draw_grid(screen, grid):
             )
 
 
-
 def a_star(): # A* algorithm
     global grid, neighbour
     neighbourr() 
 
-    start, end = S_E(grid, 0, 0)
+    start = (1,1)
+    # start, end = S_E(grid, 0, 0)
+    end = goal_positions[0]
+    new_start = goal_positions.pop(0) # choosing the end as a start
+    print("new start in the function is ", new_start)
+    # for i in goal_positions:
+    #     print(i)
+
+
     count = 0
     open_set = PriorityQueue()
     open_set.put((0, count, start)) 
@@ -199,7 +214,7 @@ def a_star(): # A* algorithm
         if current == end:
             print("finishing")
             # short_path(came_from, end)
-            return came_from, start, end
+            return came_from, start, end, new_start
         
         for nei in neighbour[current[0] * len(grid[0]) + current[1]]:
             
@@ -258,9 +273,8 @@ def draw_grid_end(grid):
 
 loadgrid(0)
 
-
+goal_positions = []
 def generate_goal_nodes(grid, start_row, start_column, num_goals=5):
-    goal_positions = []
 
     # Iterate until we have generated the required number of goal nodes
     while len(goal_positions) < num_goals:
@@ -277,14 +291,25 @@ def generate_goal_nodes(grid, start_row, start_column, num_goals=5):
                 # Mark this position as a goal node (3)
                 grid[row][column] = 3
 
+    sort_goal_positions(start)
+    # for i in goal_positions :
+    #     print(i)
+
     return grid
 
 
+def sort_goal_positions(start):
+    goal_positions.sort(key=lambda start: math.sqrt((start[0] - start_row)**2 + (start[1] - start_column)**2))    
+
+    
+
 # initializing starting node
+start = (1,1)
 start_row = 1
 start_column = 1
 grid[start_row][start_column] = 2
-grid = generate_goal_nodes(grid, start_row, start_column, num_goals=5)
+num_goals=5
+grid = generate_goal_nodes(grid, start_row, start_column, num_goals)
 draw_grid_end(grid)
 
 while not done:
@@ -302,35 +327,32 @@ while not done:
             if event.key == pygame.K_l:
                 print("Loading Maze")
                 loadgrid(0)
-            if event.key == pygame.K_f:
-                print("Filling Maze")
-                grid = [[1 for x in range(15)] for y in range(15)]
-            if event.key == pygame.K_1:
-                print("Loading Maze 1")
-                loadgrid(1)
-            if event.key == pygame.K_2:
-                print("Loading Maze 2")
-                loadgrid(2)
-            if event.key == pygame.K_3:
-                print("Loading Maze 3")
-                loadgrid(3)
-            if event.key == pygame.K_4:
-                print("Loading Maze 4")
-                loadgrid(4)
-            if event.key == pygame.K_5:
-                print("Loading Maze 5")
-                loadgrid(5)
+
             if event.key == pygame.K_RETURN:
-                if (sum(x.count(2) for x in grid)) == 1:
-                    enterPress = True
-                    print("Solving...")
-                    result = a_star()
-                    if result:
-                        # Unpack result tuple
-                        came_from, start, end = result
-                        animate_shortest_path(came_from, start, end)
-                    else:
-                        print("No path found!")
+                
+                print("length", len(goal_positions))
+                for i in range(len(goal_positions)):
+                    # sort_goal_positions(start)
+
+                    if (sum(x.count(2) for x in grid)) <= num_goals:
+                        sort_goal_positions(start)
+                        enterPress = True
+                        print("Solving...")
+                        result = a_star()
+                        if result:
+                            # Unpack result tuple
+                            came_from, start, end, new_start = result
+                            print("came from", came_from)
+                            animate_shortest_path(came_from, start, end)
+                        else:
+                            print("No path found!")
+
+                        pygame.time.wait(200)
+                        print("new_start", new_start)
+                        start = new_start # updating the start to new_start returned
+                        print("start", start)
+                        
+
             if event.key == pygame.K_r:
 
                 grid = [[0 for x in range(15)] for y in range(15)]
