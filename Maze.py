@@ -65,31 +65,6 @@ def loadgrid(index):
         print(f"Error: File not found for index {index}")
 
 
-def bfs_shortestpath(maze, path=""):
-    global grid
-    i, j = startp(maze, 0, 0)
-    pos = set()
-    for move in path:
-        if move == "L":
-            i -= 1
-
-        elif move == "R":
-            i += 1
-
-        elif move == "U":
-            j -= 1
-
-        elif move == "D":
-            j += 1
-        pos.add((j, i))
-
-    for j, row in enumerate(maze):
-        for i, col in enumerate(row):
-            if (j, i) in pos:
-
-                grid[j][i] = 4
-
-
 def startp(maze, i, j): # Find the starting point
     for x in range(len(maze[0])):
         try:
@@ -99,50 +74,6 @@ def startp(maze, i, j): # Find the starting point
             return i, j
         except:
             pass
-
-
-def bfs(maze, moves, i, j):
-    global found
-    for move in moves:
-        if move == "L":
-            i -= 1
-
-        elif move == "R":
-            i += 1
-
-        elif move == "U":
-            j -= 1
-
-        elif move == "D":
-            j += 1
-
-        if not (0 <= i < len(maze[0]) and 0 <= j < len(maze)):
-            return False
-        elif maze[j][i] == 1.0:
-            return False
-        if maze[j][i] == 3:
-            print("Found: " + moves)
-            bfs_shortestpath(maze, moves)
-            found = True
-            return True
-            break
-    return True
-
-
-def bfs_solve():
-    global grid
-    nums = queue.Queue()
-    nums.put("")
-    add = ""
-    i, ii = startp(grid, 0, 0)
-    while found != True:
-        add = nums.get()
-        for j in ["L", "R", "U", "D"]:
-            put = add + j
-            if bfs(grid, put, i, ii):
-                nums.put(put)
-            if found == True:
-                break
 
 
 def neighbourr(): # Find the neighbours of each cell
@@ -180,11 +111,11 @@ def S_E(maze, start, end): # Find the start and end points
     return start, end
 
 
-def short_path(came_from, current): # backtracking to find the shortest path
-    grid[current[0]][current[1]] = 4
-    while current in came_from:
-        current = came_from[current]
-        grid[current[0]][current[1]] = 4
+# def short_path(came_from, current): # backtracking to find the shortest path
+#     grid[current[0]][current[1]] = 4
+#     while current in came_from:
+#         current = came_from[current]
+#         grid[current[0]][current[1]] = 4
 
 
 def animate_shortest_path(came_from, start, end):
