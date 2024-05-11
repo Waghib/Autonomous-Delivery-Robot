@@ -187,6 +187,50 @@ def short_path(came_from, current): # backtracking to find the shortest path
         grid[current[0]][current[1]] = 4
 
 
+def animate_shortest_path(came_from, start, end):
+    current = end
+    path = []
+    while current != start:
+        path.append(current)
+        current = came_from[current]
+    path.append(start)
+    # path.reverse()  # Reverse the path to start from the beginning
+
+    for node in path:
+        # Update the grid to visualize the pathfinding process
+        grid[node[0]][node[1]] = 4
+        # Redraw the grid on the screen
+        draw_grid(screen, grid)
+        pygame.display.flip()
+        pygame.time.wait(50)  # Adjust the delay between each step (milliseconds)
+
+def draw_grid(screen, grid):
+    screen.fill(two)
+    for row in range(33):
+        for column in range(33):
+            if grid[row][column] == 1:
+                color = three
+            elif grid[row][column] == 2:
+                color = one
+            elif grid[row][column] == 3:
+                color = five
+            elif grid[row][column] == 4:
+                color = one
+            else:
+                color = four
+            pygame.draw.rect(
+                screen,
+                color,
+                [
+                    margin + (margin + width) * column,
+                    margin + (margin + height) * row,
+                    width,
+                    height,
+                ],
+            )
+
+
+
 def a_star(): # A* algorithm
     global grid, neighbour
     neighbourr() 
@@ -209,12 +253,13 @@ def a_star(): # A* algorithm
 
         if current == end:
             print("finishing")
-            short_path(came_from, end)
-            return True
+            # short_path(came_from, end)
+            return came_from, start, end
         
         for nei in neighbour[current[0] * len(grid[0]) + current[1]]:
             
             temp_g_score = g_score[current[0] * len(grid[0]) + current[1]] + 1
+
             if temp_g_score < g_score[nei[0] * len(grid[0]) + nei[1]]:
                 came_from[nei] = current
                 g_score[nei[0] * len(grid[0]) + nei[1]] = temp_g_score
@@ -232,7 +277,7 @@ def a_star(): # A* algorithm
         #     pygame.display.update()
         #     time.sleep(0.01)
 
-    return False
+    return None
 
 
 while not done:
@@ -270,9 +315,14 @@ while not done:
                 loadgrid(5)
             if event.key == pygame.K_RETURN:
                 if (sum(x.count(2) for x in grid)) == 1:
-                    print("Solving")
-                    # bfs_solve()
-                    a_star()
+                    print("Solving...")
+                    result = a_star()
+                    if result:
+                        # Unpack result tuple
+                        came_from, start, end = result
+                        animate_shortest_path(came_from, start, end)
+                    else:
+                        print("No path found!")
             if event.key == pygame.K_r:
 
                 grid = [[0 for x in range(33)] for y in range(33)]
