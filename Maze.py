@@ -6,6 +6,11 @@ import queue
 import os
 import sys
 import math
+import random
+
+
+global enterPress
+enterPress = False
 
 # initializing colors
 one = (79, 189, 186)
@@ -251,8 +256,33 @@ def draw_grid_end(grid):
 
 loadgrid(0)
 
-# initializing starting node 
-grid[1][1] = 2
+
+def generate_goal_nodes(grid, start_row, start_column, num_goals=5):
+    goal_positions = []
+
+    # Iterate until we have generated the required number of goal nodes
+    while len(goal_positions) < num_goals:
+        # Generate a random row and column within the grid size
+        row = random.randint(0, len(grid) - 1)
+        column = random.randint(0, len(grid[0]) - 1)
+
+        # Check if the generated position is valid
+        if (row != start_row or column != start_column) and grid[row][column] == 0:
+            # Check if the generated position is not already a goal node
+            if (row, column) not in goal_positions:
+                # Add the position to the list of goal positions
+                goal_positions.append((row, column))
+                # Mark this position as a goal node (3)
+                grid[row][column] = 3
+
+    return grid
+
+
+# initializing starting node
+start_row = 1
+start_column = 1
+grid[start_row][start_column] = 2
+grid = generate_goal_nodes(grid, start_row, start_column, num_goals=5)
 draw_grid_end(grid)
 
 while not done:
@@ -290,6 +320,7 @@ while not done:
                 loadgrid(5)
             if event.key == pygame.K_RETURN:
                 if (sum(x.count(2) for x in grid)) == 1:
+                    enterPress = True
                     print("Solving...")
                     result = a_star()
                     if result:
@@ -309,7 +340,15 @@ while not done:
 
             # Check if the clicked cell is not the start node
             if grid[row][column] != 2:
-                if (sum(x.count(2) for x in grid)) < 1 or (sum(x.count(3) for x in grid)) < 1:
+                if enterPress == True:
+                    if grid[row][column] == 3:
+                        grid[row][column] = 0
+                    elif grid[row][column] == 2:
+                        grid[row][column] = 0
+                    else:
+                        grid[row][column] = 3
+
+                elif (sum(x.count(2) for x in grid)) < 1 or (sum(x.count(3) for x in grid)) < 1:
                     if (sum(x.count(2) for x in grid)) == 0:
                         if grid[row][column] == 2:
                             grid[row][column] = 0
