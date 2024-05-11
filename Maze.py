@@ -12,6 +12,7 @@ import random
 global enterPress
 enterPress = False
 
+
 # initializing colors
 one = (79, 189, 186)
 two = (206, 171, 147)
@@ -112,7 +113,11 @@ def h(p1, p2): # euclean distance
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
 
-def S_E(maze, start, end): # Find the start and end points
+def S_E(maze): # Find the start and end points
+    start = None
+    end = None
+
+
     for x in range(len(grid)):
         for y in range(len(grid[x])):
             if grid[x][y] == 2:
@@ -121,13 +126,6 @@ def S_E(maze, start, end): # Find the start and end points
                 end = x, y
 
     return start, end
-
-
-# def short_path(came_from, current): # backtracking to find the shortest path
-#     grid[current[0]][current[1]] = 4
-#     while current in came_from:
-#         current = came_from[current]
-#         grid[current[0]][current[1]] = 4
 
 
 def animate_shortest_path(came_from, start, end):
@@ -146,6 +144,23 @@ def animate_shortest_path(came_from, start, end):
         draw_grid(screen, grid)
         pygame.display.flip()
         pygame.time.wait(50)  # Adjust the delay between each step (milliseconds)
+
+def animate_multiple_paths(came_from, start, goal_positions):
+    current = goal_positions[-1]
+    path = []
+
+    while current != start:
+        path.append(current)
+        current = came_from[current]
+
+    path.append(start)
+    path.reverse()
+
+    for node in path:
+        grid[node[0]][node[1]] = 4
+        draw_grid_end(grid)
+        pygame.display.flip()
+        pygame.time.wait(50)
 
 def draw_grid(screen, grid):
     screen.fill(two)
@@ -172,44 +187,62 @@ def draw_grid(screen, grid):
                 ],
             )
 
-
-
-def a_star(): # A* algorithm
+def a_star(goal_positions): # A* algorithm
     global grid, neighbour
-    neighbourr() 
+    neighbourr()
 
-    start, end = S_E(grid, 0, 0)
+    start, end =  S_E(grid)
+    print("start : ", start)
+    print("goal : ", goal_positions[0])
+    if not start or not end:
+        print("Error: Start or end point not found.")
+        return None    
+
+
     count = 0
     open_set = PriorityQueue()
-    open_set.put((0, count, start)) 
-    open_set_his = {start}
+    open_set_his = set()
     came_from = {}
+    g_score = {start: 0}
+    f_score = {start: h(start, goal_positions[0])}
 
-    g_score = [float("inf") for row in grid for spot in row]
-    g_score[start[0] * len(grid[0]) + start[1]] = 0 # g_score holds the cost from the start node to each node
-    f_score = [float("inf") for row in grid for spot in row] 
-    f_score[start[0] * len(grid[0]) + start[1]] = h(start, end) # f_score holds the total estimated cost from the start node to the goal node through each node
+    open_set.put((f_score[start], count, start))
+    open_set_his.add(start)
 
     while not open_set.empty():
         current = open_set.get()[2]
         open_set_his.remove(current)
 
-        if current == end:
-            print("finishing")
-            # short_path(came_from, end)
-            return came_from, start, end
+        if current in goal_positions:
+            goal_positions.remove(current)
+            if not goal_positions:
+                return came_from
+            
+            next_goal = min(goal_positions, key=lambda x: h(current, x))
+            end = next_goal
+
+            count = 0
+            open_set = PriorityQueue()
+            open_set_his = set()
+            g_score = {current: 0}
+            f_score = {current: h(current, next_goal)}
+
+            open_set.put((f_score[current], count, current))
+            open_set_his.add(current)
+
+            continue
         
         for nei in neighbour[current[0] * len(grid[0]) + current[1]]:
             
-            temp_g_score = g_score[current[0] * len(grid[0]) + current[1]] + 1
+            temp_g_score = g_score[current] + 1
 
-            if temp_g_score < g_score[nei[0] * len(grid[0]) + nei[1]]:
+            if temp_g_score < g_score.get(nei, float('inf')):
                 came_from[nei] = current
-                g_score[nei[0] * len(grid[0]) + nei[1]] = temp_g_score
-                f_score[nei[0] * len(grid[0]) + nei[1]] = temp_g_score + h(nei, end)
+                g_score[nei] = temp_g_score
+                f_score[nei] = temp_g_score + h(nei, end)
                 if nei not in open_set_his:
                     count += 1
-                    open_set.put((f_score[nei[0] * len(grid[0]) + nei[1]], count, nei))
+                    open_set.put((f_score[nei], count, nei))
                     open_set_his.add(nei)
                     # grid[nei[0]][nei[1]] = 5
                     # pygame.display.update()
@@ -256,9 +289,9 @@ def draw_grid_end(grid):
 
 loadgrid(0)
 
+goal_positions = []
 
-def generate_goal_nodes(grid, start_row, start_column, num_goals=5):
-    goal_positions = []
+def generate_goal_nodes(grid, start_row, start_column, num_goals=2):
 
     # Iterate until we have generated the required number of goal nodes
     while len(goal_positions) < num_goals:
@@ -275,14 +308,19 @@ def generate_goal_nodes(grid, start_row, start_column, num_goals=5):
                 # Mark this position as a goal node (3)
                 grid[row][column] = 3
 
+    # Sort goal_positions based on distance from the start position (start_row, start_column)
+    goal_positions.sort(key=lambda pos: math.sqrt((pos[0] - start_row)**2 + (pos[1] - start_column)**2))
+
     return grid
 
 
 # initializing starting node
 start_row = 1
 start_column = 1
-grid[start_row][start_column] = 2
-grid = generate_goal_nodes(grid, start_row, start_column, num_goals=5)
+
+start = (1, 1)
+grid[start[0]][start[1]] = 2
+grid = generate_goal_nodes(grid, start_row, start_column, num_goals=2)
 draw_grid_end(grid)
 
 while not done:
@@ -300,38 +338,21 @@ while not done:
             if event.key == pygame.K_l:
                 print("Loading Maze")
                 loadgrid(0)
-            if event.key == pygame.K_f:
-                print("Filling Maze")
-                grid = [[1 for x in range(15)] for y in range(15)]
-            if event.key == pygame.K_1:
-                print("Loading Maze 1")
-                loadgrid(1)
-            if event.key == pygame.K_2:
-                print("Loading Maze 2")
-                loadgrid(2)
-            if event.key == pygame.K_3:
-                print("Loading Maze 3")
-                loadgrid(3)
-            if event.key == pygame.K_4:
-                print("Loading Maze 4")
-                loadgrid(4)
-            if event.key == pygame.K_5:
-                print("Loading Maze 5")
-                loadgrid(5)
+
             if event.key == pygame.K_RETURN:
                 if (sum(x.count(2) for x in grid)) == 1:
                     enterPress = True
                     print("Solving...")
-                    result = a_star()
+                    for i in goal_positions:
+                        print(i)
+                    result = a_star(goal_positions.copy())
                     if result:
-                        # Unpack result tuple
-                        came_from, start, end = result
-                        animate_shortest_path(came_from, start, end)
+                        animate_multiple_paths(result, start, goal_positions.copy())
                     else:
                         print("No path found!")
             if event.key == pygame.K_r:
-
                 grid = [[0 for x in range(15)] for y in range(15)]
+                
         if pygame.mouse.get_pressed()[2]:  # Right mouse button
             column = pos[0] // (width + margin)
             row = pos[1] // (height + margin)
