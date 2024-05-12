@@ -56,6 +56,7 @@ def loadgrid(index):
     script_dir = os.path.dirname(__file__)  # Get the directory of the current script
 
     file_path = os.path.join(script_dir, "Maze1", "maze.txt")
+    print("maze 1 loaded")
 
     # start_row = 1
     # start_column = 1
@@ -139,6 +140,23 @@ def S_E(maze, start, end): # Find the start and end points
 #         current = came_from[current]
 #         grid[current[0]][current[1]] = 4
 
+def clear_shortest_path(came_from, start, end):
+    current = end
+    path = []
+    while current != start:
+        path.append(current)
+        current = came_from[current]
+    path.append(start)
+    path.reverse()  # Reverse the path to start from the beginning
+
+    for node in path:
+        # Update the grid to visualize the pathfinding process
+        grid[node[0]][node[1]] = 0
+        # Redraw the grid on the screen
+        draw_grid(screen, grid)
+        pygame.display.flip()
+        pygame.time.wait(50)  # Adjust the delay between each step (milliseconds)
+
 
 def animate_shortest_path(came_from, start, end):
     current = end
@@ -183,7 +201,7 @@ def draw_grid(screen, grid):
             )
 
 
-def a_star(start, end): # A* algorithm
+def a_star(start, end, came_from): # A* algorithm
     global grid, neighbour
     neighbourr() 
 
@@ -301,6 +319,20 @@ def generate_goal_nodes(grid, start_row, start_column, num_goals=5):
 def sort_goal_positions(start):
     goal_positions.sort(key=lambda start: math.sqrt((start[0] - start_row)**2 + (start[1] - start_column)**2))    
 
+
+def update_goal_nodes(row, column, grid, num_goals):
+
+    for i in goal_positions:
+        print(i)
+
+    num_goals -= 1
+    goal_positions.remove((row,column))
+    print("goal removed")
+    print("new list is ")
+    for i in goal_positions:
+        print(i)
+
+    
     
 
 # initializing starting node
@@ -336,28 +368,28 @@ while not done:
                     print(i)
                 
                 for i in range(len(goal_positions)):
-                    # sort_goal_positions(start)
 
                     if (sum(x.count(2) for x in grid)) <= num_goals:
-                        
+
                         sort_goal_positions(start)
                         end = goal_positions[0]
                         enterPress = True
                         print("start : ", start)
                         print("end : ", end)
                         # print("Solving...")
-                        result = a_star(start, end)
+                        result = a_star(start, end, came_from)
                         if result:
                             # Unpack result tuple
                             came_from, start, end, new_start = result
                             print("came from", came_from)
                             animate_shortest_path(came_from, start, end)
+                            clear_shortest_path(came_from, start, end)                                
                             came_from.clear() # clearing the came from dictionary
 
                         else:
                             print("No path found!")
 
-                        pygame.time.wait(200)
+                        pygame.time.wait(1000)
                         start = new_start # updating the start to new_start returned
                         
 
@@ -368,19 +400,19 @@ while not done:
             column = pos[0] // (width + margin)
             row = pos[1] // (height + margin)
 
-            print(column," , ", row)
+            # print(column," , ", row)
 
             # Check if the clicked cell is not the start node
             if grid[row][column] != 2:
-                if enterPress == True:
-                    if grid[row][column] == 3:
-                        grid[row][column] = 0
-                    elif grid[row][column] == 2:
-                        grid[row][column] = 0
-                    else:
-                        grid[row][column] = 3
+                # if enterPress == True:
+                #     if grid[row][column] == 3:
+                #         grid[row][column] = 0
+                #     elif grid[row][column] == 2:
+                #         grid[row][column] = 0
+                #     else:
+                #         grid[row][column] = 3
 
-                elif (sum(x.count(2) for x in grid)) < 1 or (sum(x.count(3) for x in grid)) < 1:
+                if (sum(x.count(2) for x in grid)) < 1 or (sum(x.count(3) for x in grid)) < 1:
                     if (sum(x.count(2) for x in grid)) == 0:
                         if grid[row][column] == 2:
                             grid[row][column] = 0
@@ -400,6 +432,9 @@ while not done:
                         grid[row][column] = 0
                     if grid[row][column] == 3:
                         grid[row][column] = 0
+
+                        update_goal_nodes(row, column, grid, num_goals)
+
                     if grid[row][column] == 1:
                         grid[row][column] = 0
 
