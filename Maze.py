@@ -183,13 +183,13 @@ def draw_grid(screen, grid):
             )
 
 
-def a_star(): # A* algorithm
+def a_star(start, end): # A* algorithm
     global grid, neighbour
     neighbourr() 
 
-    start = (1,1)
+    # start = (1,1)
     # start, end = S_E(grid, 0, 0)
-    end = goal_positions[0]
+    # end = goal_positions[0]
     new_start = goal_positions.pop(0) # choosing the end as a start
     print("new start in the function is ", new_start)
     # for i in goal_positions:
@@ -200,7 +200,6 @@ def a_star(): # A* algorithm
     open_set = PriorityQueue()
     open_set.put((0, count, start)) 
     open_set_his = {start}
-    came_from = {}
 
     g_score = [float("inf") for row in grid for spot in row]
     g_score[start[0] * len(grid[0]) + start[1]] = 0 # g_score holds the cost from the start node to each node
@@ -236,6 +235,7 @@ def a_star(): # A* algorithm
         #     grid[current[0]][current[1]] = 6
         #     pygame.display.update()
         #     time.sleep(0.01)
+
 
     return None
 
@@ -308,7 +308,7 @@ start = (1,1)
 start_row = 1
 start_column = 1
 grid[start_row][start_column] = 2
-num_goals=5
+num_goals = 5
 grid = generate_goal_nodes(grid, start_row, start_column, num_goals)
 draw_grid_end(grid)
 
@@ -330,27 +330,35 @@ while not done:
 
             if event.key == pygame.K_RETURN:
                 
+                came_from = {}
                 print("length", len(goal_positions))
+                for i in goal_positions:
+                    print(i)
+                
                 for i in range(len(goal_positions)):
                     # sort_goal_positions(start)
 
                     if (sum(x.count(2) for x in grid)) <= num_goals:
+                        
                         sort_goal_positions(start)
+                        end = goal_positions[0]
                         enterPress = True
-                        print("Solving...")
-                        result = a_star()
+                        print("start : ", start)
+                        print("end : ", end)
+                        # print("Solving...")
+                        result = a_star(start, end)
                         if result:
                             # Unpack result tuple
                             came_from, start, end, new_start = result
                             print("came from", came_from)
                             animate_shortest_path(came_from, start, end)
+                            came_from.clear() # clearing the came from dictionary
+
                         else:
                             print("No path found!")
 
                         pygame.time.wait(200)
-                        print("new_start", new_start)
                         start = new_start # updating the start to new_start returned
-                        print("start", start)
                         
 
             if event.key == pygame.K_r:
