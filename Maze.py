@@ -15,13 +15,22 @@ enterPress = False
 
 
 # initializing colors
-one = (79, 189, 186)
+one = (169, 147, 224)
 two = (206, 171, 147)
-three = (227, 202, 165)
+three = (151, 134, 110)
 four = (255, 251, 233)
-five = (246, 137, 137)
+five = (107, 225, 165)
 six = (255, 0, 0)
 seven = (0, 255, 0)
+
+# if grid[row][column] == 1:
+#                 color = three
+#             elif grid[row][column] == 2:
+#                 color = one
+#             elif grid[row][column] == 3:
+#                 color = five
+#             elif grid[row][column] == 4:
+#                 color = one
 
 pygame.init()
 
@@ -436,8 +445,6 @@ while not done:
                         else:
                             grid[row][column] = 3
                             add_goal_node(row, column, grid, num_goals)
-
-
 
                 elif (sum(x.count(2) for x in grid)) == 1 and (sum(x.count(3) for x in grid)) >= 1:
                     if grid[row][column] == 3:
