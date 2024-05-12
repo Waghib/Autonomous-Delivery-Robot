@@ -8,11 +8,8 @@ import sys
 import math
 import random
 
-
 global enterPress
 enterPress = False
-
-
 
 # initializing colors
 one = (169, 147, 224)
@@ -22,15 +19,6 @@ four = (255, 251, 233)
 five = (107, 225, 165)
 six = (255, 0, 0)
 seven = (0, 255, 0)
-
-# if grid[row][column] == 1:
-#                 color = three
-#             elif grid[row][column] == 2:
-#                 color = one
-#             elif grid[row][column] == 3:
-#                 color = five
-#             elif grid[row][column] == 4:
-#                 color = one
 
 pygame.init()
 
@@ -50,7 +38,6 @@ clock = pygame.time.Clock()
 found = False
 neighbour = []
 
-
 def savegrid():
     global grid
     script_dir = os.path.dirname(__file__)  # Get the directory of the current script
@@ -59,29 +46,12 @@ def savegrid():
     np.savetxt(file_path, grid)
     print(f"Grid saved to {file_path}")
 
-
 def loadgrid(index):
     global grid
     script_dir = os.path.dirname(__file__)  # Get the directory of the current script
 
     file_path = os.path.join(script_dir, "Maze1", "maze.txt")
     print("maze 1 loaded")
-
-    # start_row = 1
-    # start_column = 1
-    # grid[start_row][start_column] = 2
-    # if index == 0:
-    #     file_path = os.path.join(script_dir, "maze.txt")
-    # elif index == 1:
-    #     file_path = os.path.join(script_dir, "Maze1", "maze.txt")
-    # elif index == 2:
-    #     file_path = os.path.join(script_dir, "Maze2", "maze.txt")
-    # elif index == 3:
-    #     file_path = os.path.join(script_dir, "Maze3", "maze.txt")
-    # elif index == 4:
-    #     file_path = os.path.join(script_dir, "Maze4", "maze.txt")
-    # elif index == 5:
-    #     file_path = os.path.join(script_dir, "Maze5", "maze.txt")
 
     try:
         grid = np.loadtxt(file_path).tolist()
@@ -123,31 +93,6 @@ def h(p1, p2): # euclean distance
     x2, y2 = p2
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
-
-def S_E(maze, start, end): # Find the start and end points
-    flag = False
-    for x in range(len(grid)):
-        for y in range(len(grid[x])):
-            if grid[x][y] == 1:
-                continue 
-            if grid[x][y] == 2:
-                start = x, y
-            if grid[x][y] == 3:
-                end = x, y
-                flag = True
-        if flag:
-            break
-                
-
-
-    return start, end
-
-
-# def short_path(came_from, current): # backtracking to find the shortest path
-#     grid[current[0]][current[1]] = 4
-#     while current in came_from:
-#         current = came_from[current]
-#         grid[current[0]][current[1]] = 4
 
 def clear_shortest_path(came_from, start, end):
     current = end
@@ -214,14 +159,7 @@ def a_star(start, end, came_from): # A* algorithm
     global grid, neighbour
     neighbourr() 
 
-    # start = (1,1)
-    # start, end = S_E(grid, 0, 0)
-    # end = goal_positions[0]
     new_start = goal_positions.pop(0) # choosing the end as a start
-    print("new start in the function is ", new_start)
-    # for i in goal_positions:
-    #     print(i)
-
 
     count = 0
     open_set = PriorityQueue()
@@ -319,11 +257,8 @@ def generate_goal_nodes(grid, start_row, start_column, num_goals=5):
                 grid[row][column] = 3
 
     sort_goal_positions(start)
-    # for i in goal_positions :
-    #     print(i)
 
     return grid
-
 
 def sort_goal_positions(start):
     goal_positions.sort(key=lambda start: math.sqrt((start[0] - start_row)**2 + (start[1] - start_column)**2))    
@@ -411,18 +346,8 @@ while not done:
             column = pos[0] // (width + margin)
             row = pos[1] // (height + margin)
 
-            # print(column," , ", row)
-
             # Check if the clicked cell is not the start node
             if grid[row][column] != 2:
-                # if enterPress == True:
-                #     if grid[row][column] == 3:
-                #         grid[row][column] = 0
-                #     elif grid[row][column] == 2:
-                #         grid[row][column] = 0
-                #     else:
-                #         grid[row][column] = 3
-
 
                 if (sum(x.count(2) for x in grid)) < 1 or (sum(x.count(3) for x in grid)) < 1:
                     if (sum(x.count(2) for x in grid)) == 0:
