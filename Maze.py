@@ -320,7 +320,7 @@ def sort_goal_positions(start):
     goal_positions.sort(key=lambda start: math.sqrt((start[0] - start_row)**2 + (start[1] - start_column)**2))    
 
 
-def update_goal_nodes(row, column, grid, num_goals):
+def deleted_goal_nodes(row, column, grid, num_goals):
 
     for i in goal_positions:
         print(i)
@@ -332,7 +332,9 @@ def update_goal_nodes(row, column, grid, num_goals):
     for i in goal_positions:
         print(i)
 
-    
+def add_goal_node(row, column, grid, num_goals):
+    num_goals += 2
+    goal_positions.append((row,column))
     
 
 # initializing starting node
@@ -412,28 +414,47 @@ while not done:
                 #     else:
                 #         grid[row][column] = 3
 
+
                 if (sum(x.count(2) for x in grid)) < 1 or (sum(x.count(3) for x in grid)) < 1:
                     if (sum(x.count(2) for x in grid)) == 0:
                         if grid[row][column] == 2:
                             grid[row][column] = 0
+                            
                         elif grid[row][column] == 3:
                             grid[row][column] = 0
+                            deleted_goal_nodes(row, column, grid, num_goals)
                         else:
                             grid[row][column] = 2
+                            start = (row,column)
+
                     else:
                         if grid[row][column] == 3:
                             grid[row][column] = 0
+                            deleted_goal_nodes(row, column, grid, num_goals)
                         elif grid[row][column] == 2:
                             grid[row][column] = 0
                         else:
                             grid[row][column] = 3
+                            add_goal_node(row, column, grid, num_goals)
+
+
+
+                elif (sum(x.count(2) for x in grid)) == 1 and (sum(x.count(3) for x in grid)) >= 1:
+                    if grid[row][column] == 3:
+                            grid[row][column] = 0
+                            deleted_goal_nodes(row, column, grid, num_goals)
+                    else:
+                            grid[row][column] = 3
+                            add_goal_node(row, column, grid, num_goals)
+
+
                 else:
                     if grid[row][column] == 2:
                         grid[row][column] = 0
                     if grid[row][column] == 3:
                         grid[row][column] = 0
 
-                        update_goal_nodes(row, column, grid, num_goals)
+                        deleted_goal_nodes(row, column, grid, num_goals)
 
                     if grid[row][column] == 1:
                         grid[row][column] = 0
