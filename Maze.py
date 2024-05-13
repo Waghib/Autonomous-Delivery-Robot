@@ -19,26 +19,27 @@ four = (255, 251, 233)
 five = (107, 225, 165)
 six = (255, 0, 0)
 seven = (0, 255, 0)
+vehicle = (50, 44, 36)
 
 pygame.init()
 
 size = (332, 332)
-screen = pygame.display.set_mode(size)
+screen = pygame.display.set_mode(size) # added display size
 
-pygame.display.set_caption("MAZE")
+pygame.display.set_caption("Autonomous Delivery Robot")
 
 width = 20
 height = 20
 margin = 2
 
-grid = [[0 for x in range(15)] for y in range(15)]
+grid = [[0 for x in range(15)] for y in range(15)] # 15x15 grid
 
 done = False
-clock = pygame.time.Clock()
+clock = pygame.time.Clock() # added clock
 found = False
 neighbour = []
 
-def savegrid():
+def savegrid(): # Save the grid to a text file
     global grid
     script_dir = os.path.dirname(__file__)  # Get the directory of the current script
     file_path = os.path.join(script_dir, "maze.txt")
@@ -46,7 +47,7 @@ def savegrid():
     np.savetxt(file_path, grid)
     print(f"Grid saved to {file_path}")
 
-def loadgrid(index):
+def loadgrid(index): # Load the grid from a text file
     global grid
     script_dir = os.path.dirname(__file__)  # Get the directory of the current script
 
@@ -72,16 +73,16 @@ def startp(maze, i, j): # Find the starting point
 
 def neighbourr(): # Find the neighbours of each cell
     global grid, neighbour
-    neighbour = [[] for col in range(len(grid)) for row in range(len(grid))]
+    neighbour = [[] for col in range(len(grid)) for row in range(len(grid))] # Create a list of neighbours for each cell
     count = 0
-    for i in range(len(grid)):
+    for i in range(len(grid)):  # Iterate through each cell in the grid
         for j in range(len(grid)):
             neighbour[count] == []
-            if i > 0 and grid[i - 1][j] != 1:
-                neighbour[count].append((i - 1, j))
-            if j > 0 and grid[i][j - 1] != 1:
-                neighbour[count].append((i, j - 1))
-            if i < len(grid) - 1 and grid[i + 1][j] != 1:
+            if i > 0 and grid[i - 1][j] != 1:   # Check if the cell is not a wall
+                neighbour[count].append((i - 1, j))     # Add the neighbour to the list
+            if j > 0 and grid[i][j - 1] != 1:   # Check if the cell is not a wall
+                neighbour[count].append((i, j - 1))     # Add the neighbour to the list
+            if i < len(grid) - 1 and grid[i + 1][j] != 1:   
                 neighbour[count].append((i + 1, j))
             if j < len(grid) - 1 and grid[i][j + 1] != 1:
                 neighbour[count].append((i, j + 1))
@@ -94,7 +95,7 @@ def h(p1, p2): # euclean distance
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
 
-def clear_shortest_path(came_from, start, end):
+def clear_shortest_path(came_from, start, end):     # Clear the shortest path from the grid of previous path
     current = end
     path = []
     while current != start:
@@ -112,7 +113,7 @@ def clear_shortest_path(came_from, start, end):
         pygame.time.wait(50)  # Adjust the delay between each step (milliseconds)
 
 
-def animate_shortest_path(came_from, start, end):
+def animate_shortest_path(came_from, start, end): # Animate the shortest path
     current = end
     path = []
     while current != start:
@@ -129,7 +130,7 @@ def animate_shortest_path(came_from, start, end):
         pygame.display.flip()
         pygame.time.wait(50)  # Adjust the delay between each step (milliseconds)
 
-def draw_grid(screen, grid):
+def draw_grid(screen, grid): # Draw the grid on the screen
     screen.fill(two)
     for row in range(15):
         for column in range(15):
@@ -157,53 +158,43 @@ def draw_grid(screen, grid):
 
 def a_star(start, end, came_from): # A* algorithm
     global grid, neighbour
-    neighbourr() 
+    neighbourr()
 
     new_start = goal_positions.pop(0) # choosing the end as a start
 
     count = 0
-    open_set = PriorityQueue()
-    open_set.put((0, count, start)) 
-    open_set_his = {start}
+    open_set = PriorityQueue()  # Priority queue to store the nodes to be evaluated
+    open_set.put((0, count, start)) # Add the start node to the queue  
+    open_set_his = {start}  # Set to keep track of the nodes in the queue
 
-    g_score = [float("inf") for row in grid for spot in row]
-    g_score[start[0] * len(grid[0]) + start[1]] = 0 # g_score holds the cost from the start node to each node
+    g_score = [float("inf") for row in grid for spot in row]    # g_score holds the cost from the start node to each node
+    g_score[start[0] * len(grid[0]) + start[1]] = 0
     f_score = [float("inf") for row in grid for spot in row] 
     f_score[start[0] * len(grid[0]) + start[1]] = h(start, end) # f_score holds the total estimated cost from the start node to the goal node through each node
 
-    while not open_set.empty():
-        current = open_set.get()[2]
-        open_set_his.remove(current)
+    while not open_set.empty():     # Iterate until the open set is empty
+        current = open_set.get()[2] # Get the node with the lowest f_score value from the queue 2 is the index of the node
+        open_set_his.remove(current)  # Remove the current node from the queue
 
-        if current == end:
+        if current == end:  # Check if the goal node has been reached
             print("finishing")
             # short_path(came_from, end)
             return came_from, start, end, new_start
         
-        for nei in neighbour[current[0] * len(grid[0]) + current[1]]:
+        for nei in neighbour[current[0] * len(grid[0]) + current[1]]:   # Iterate through the neighbours of the current node
             
-            temp_g_score = g_score[current[0] * len(grid[0]) + current[1]] + 1
+            temp_g_score = g_score[current[0] * len(grid[0]) + current[1]] + 1  # Calculate the tentative g_score value
 
-            if temp_g_score < g_score[nei[0] * len(grid[0]) + nei[1]]:
-                came_from[nei] = current
-                g_score[nei[0] * len(grid[0]) + nei[1]] = temp_g_score
-                f_score[nei[0] * len(grid[0]) + nei[1]] = temp_g_score + h(nei, end)
-                if nei not in open_set_his:
-                    count += 1
-                    open_set.put((f_score[nei[0] * len(grid[0]) + nei[1]], count, nei))
-                    open_set_his.add(nei)
-                    # grid[nei[0]][nei[1]] = 5
-                    # pygame.display.update()
-                    # time.sleep(0.01)
-
-        # if current != start:
-        #     grid[current[0]][current[1]] = 6
-        #     pygame.display.update()
-        #     time.sleep(0.01)
-
+            if temp_g_score < g_score[nei[0] * len(grid[0]) + nei[1]]:  # Check if the new g_score value is less than the current g_score value
+                came_from[nei] = current # Update the path to the neighbour
+                g_score[nei[0] * len(grid[0]) + nei[1]] = temp_g_score # Update the g_score value
+                f_score[nei[0] * len(grid[0]) + nei[1]] = temp_g_score + h(nei, end) # Update the f_score value
+                if nei not in open_set_his: # Check if the neighbour is not in the queue
+                    count += 1 # Increment the count
+                    open_set.put((f_score[nei[0] * len(grid[0]) + nei[1]], count, nei))     # Add the neighbour to the queue
+                    open_set_his.add(nei)   # Add the neighbour to the set
 
     return None
-
 
 def draw_grid_end(grid):
 
@@ -221,6 +212,8 @@ def draw_grid_end(grid):
                 color = six
             elif grid[row][column] == 6:
                 color = seven
+            elif grid[row][column] == 10:
+                color = vehicle
             else:
                 color = four
             pygame.draw.rect(
@@ -237,6 +230,43 @@ def draw_grid_end(grid):
     return
 
 loadgrid(0)
+
+def clear_previous_vehicles():
+    global grid, vehicle_positions
+
+    # Iterate through the list of vehicle positions and reset those cells back to empty (0)
+    for row, col in vehicle_positions:
+        grid[row][col] = 0  # Reset the cell to an empty cell (0)
+
+    # Clear the list of vehicle positions after resetting the grid
+    vehicle_positions = []  # Reset the list of vehicle positions to empty
+
+
+def random_generate_vehicles():
+    global grid, start_row, start_column
+   # Get the dimensions of the grid
+    rows = len(grid)
+    cols = len(grid[0])
+
+    # Initialize the number of vehicles to place
+    num_vehicles = 4
+
+    # Randomly place vehicles on the grid
+    while num_vehicles > 0:
+        row = random.randint(0, rows - 1)
+        col = random.randint(0, cols - 1)
+
+        # Check if the cell is empty (0), not the start node (2), not the goal node (3), and not an already placed vehicle or obstacle (1)
+        if grid[row][col] == 0 and (row != start_row or col != start_column):
+            # Place the vehicle on the grid
+            grid[row][col] = 1  # Use the same value as obstacle (1) to represent vehicles
+            vehicle_positions.append((row, col))
+            # Decrement the number of vehicles left to place
+            num_vehicles -= 1
+    draw_grid_end(grid)
+    pygame.display.flip()
+
+vehicle_positions = []
 
 goal_positions = []
 def generate_goal_nodes(grid, start_row, start_column, num_goals=5):
@@ -271,8 +301,8 @@ def deleted_goal_nodes(row, column, grid, num_goals):
 
     num_goals -= 1
     goal_positions.remove((row,column))
-    print("goal removed")
-    print("new list is ")
+    # print("goal removed")
+    # print("new list is ")
     for i in goal_positions:
         print(i)
 
@@ -288,6 +318,8 @@ start_column = 1
 grid[start_row][start_column] = 2
 num_goals = 5
 grid = generate_goal_nodes(grid, start_row, start_column, num_goals)
+# random_generate_vehicles() # generating vehicles
+
 draw_grid_end(grid)
 
 while not done:
@@ -309,9 +341,9 @@ while not done:
             if event.key == pygame.K_RETURN:
                 
                 came_from = {}
-                print("length", len(goal_positions))
-                for i in goal_positions:
-                    print(i)
+                # print("length", len(goal_positions))
+                # for i in goal_positions:
+                #     print(i)
                 
                 for i in range(len(goal_positions)):
 
@@ -320,8 +352,8 @@ while not done:
                         sort_goal_positions(start)
                         end = goal_positions[0]
                         enterPress = True
-                        print("start : ", start)
-                        print("end : ", end)
+                        # print("start : ", start)
+                        # print("end : ", end)
                         # print("Solving...")
                         result = a_star(start, end, came_from)
                         if result:
@@ -329,14 +361,20 @@ while not done:
                             came_from, start, end, new_start = result
                             print("came from", came_from)
                             animate_shortest_path(came_from, start, end)
-                            clear_shortest_path(came_from, start, end)                                
+                            clear_shortest_path(came_from, start, end)
+                            # clear_previous_vehicles()
+                              
                             came_from.clear() # clearing the came from dictionary
 
                         else:
                             print("No path found!")
 
                         pygame.time.wait(1000)
+                        # random_generate_vehicles()
+                        # pygame.time.wait(2000)
+
                         start = new_start # updating the start to new_start returned
+
                         
 
             if event.key == pygame.K_r:
@@ -379,7 +417,6 @@ while not done:
                             grid[row][column] = 3
                             add_goal_node(row, column, grid, num_goals)
 
-
                 else:
                     if grid[row][column] == 2:
                         grid[row][column] = 0
@@ -398,6 +435,8 @@ while not done:
             # Check if the clicked cell is not the start node
             if grid[row][column] != 2:
                 grid[row][column] = 1  # Set the clicked cell to 1 (wall or obstacle)
+            # if grid[row][column] == 1:
+            #     grid[row][column] = 0
 
     pos = pygame.mouse.get_pos()
     x = pos[0]
