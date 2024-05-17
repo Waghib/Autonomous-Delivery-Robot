@@ -231,6 +231,7 @@ def draw_grid_end(grid):
 
 loadgrid(0)
 
+
 def clear_previous_vehicles():
     global grid, vehicle_positions
 
@@ -290,10 +291,13 @@ def generate_goal_nodes(grid, start_row, start_column, num_goals=5):
 
     return grid
 
+
+# sorting the goal nodes by euclean distance
 def sort_goal_positions(start):
     goal_positions.sort(key=lambda start: math.sqrt((start[0] - start_row)**2 + (start[1] - start_column)**2))    
 
 
+# function to delete the goal node dynamically
 def deleted_goal_nodes(row, column, grid, num_goals):
 
     for i in goal_positions:
@@ -306,6 +310,7 @@ def deleted_goal_nodes(row, column, grid, num_goals):
     for i in goal_positions:
         print(i)
 
+# function to add the goal node dynamically
 def add_goal_node(row, column, grid, num_goals):
     num_goals += 2
     goal_positions.append((row,column))
