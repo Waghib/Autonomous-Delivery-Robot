@@ -445,6 +445,8 @@ while not done:
     x = pos[0]
     y = pos[1]
     screen.fill(two)
+
+    # draw grid function
     draw_grid_end(grid)
     
     pygame.display.flip()
